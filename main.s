@@ -10,16 +10,37 @@ main:
 	org	0x100		    ; Main code starts here at address 0x100
 start:
 	movlw 	0x0
-	movwf	TRISB, A	    ; Port C all outputs
+	movwf	TRISC, A	    ; Port C all outputs
 	bra 	test
 loop:
-	movff 	0x06, PORTB
+	call	delay_setup
 	incf 	0x06, W, A
+	movff 	0x06, PORTC
 test:
-	movwf	0x06, A	    ; Test for end of loop condition
-	movlw 	0x63
-	cpfsgt 	0x06, A
-	bra 	loop		    ; Not yet finished goto start of loop again
-	goto 	0x0		    ; Re-run program from start
+	movwf	0x06, A		    ; Test for end of loop condition
+	movlw 	0xFF		    ;end condition
+	cpfseq 	0x06, A
+	bra 	loop	; Not yet finished goto start of loop again
+	movlw	0x0
+	goto 	$		    ; hold program at end
 
-	end	main
+delay_setup:
+    movlw   0xFF ;delay value 1
+    movwf   0x01, A
+    call    delay1
+    return 0
+ 
+delay1:
+    movlw   0xFF ;delay value 2
+    movwf   0x02, A
+    call    delay2
+    decfsz  0x01, A
+    bra	    delay1
+    return 0
+
+delay2:
+    decfsz  0x02, A
+    bra	    delay2
+    return 0
+	
+    

@@ -53,7 +53,7 @@ alternete_delay_start:
     call    alternate_delay
     return 0
    
-alternate_delay;
+alternate_delay:
     decfsz  0x21
     bra	    alternate_delay
     decfsz  0x22

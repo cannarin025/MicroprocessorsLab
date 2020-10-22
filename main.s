@@ -42,5 +42,24 @@ delay2:
     decfsz  0x02, A
     bra	    delay2
     return 0
+    
+alternete_delay_start:
+    movlw   0xFF    ;start value 1
+    movwf   0x21, A
+    movlw   0xFF    ;start value 2
+    movwf   0x22, A
+    movlw   0xFF
+    movwf   0x23
+    call    alternate_delay
+    return 0
+   
+alternate_delay;
+    decfsz  0x21
+    bra	    alternate_delay
+    decfsz  0x22
+    bra	    alternate_delay
+    decfsz  0x23
+    bra	    alternate_delay
+    return 0
 	
     

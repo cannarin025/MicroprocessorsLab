@@ -54,4 +54,4 @@ read_loop:
 	movwf	PORTD, A
 	
 	movff	PORTE, 0x02 ;stores read data in register 0x02
-	return	0`
+	return	0

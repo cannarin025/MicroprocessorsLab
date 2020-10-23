@@ -9,57 +9,49 @@ main:
 
 	org	0x100		    ; Main code starts here at address 0x100
 start:
-	movlw 	0x0
-	movwf	TRISC, A	    ; Port C all outputs
-	bra 	test
-loop:
-	call	delay_setup
-	incf 	0x06, W, A
-	movff 	0x06, PORTC
-test:
-	movwf	0x06, A		    ; Test for end of loop condition
-	movlw 	0xFF		    ;end condition
-	cpfseq 	0x06, A
-	bra 	loop	; Not yet finished goto start of loop again
-	movlw	0x0
-	goto 	$		    ; hold program at end
+	call	write_data
+	call	read_data
+	goto	$
 
-delay_setup:
-    movlw   0xFF ;delay value 1
-    movwf   0x01, A
-    call    delay1
-    return 0
- 
-delay1:
-    movlw   0xFF ;delay value 2
-    movwf   0x02, A
-    call    delay2
-    decfsz  0x01, A
-    bra	    delay1
-    return 0
-
-delay2:
-    decfsz  0x02, A
-    bra	    delay2
-    return 0
-    
-alternete_delay_start:
-    movlw   0xFF    ;start value 1
-    movwf   0x21, A
-    movlw   0xFF    ;start value 2
-    movwf   0x22, A
-    movlw   0xFF
-    movwf   0x23
-    call    alternate_delay
-    return 0
-   
-alternate_delay:
-    decfsz  0x21
-    bra	    alternate_delay
-    decfsz  0x22
-    bra	    alternate_delay
-    decfsz  0x23
-    bra	    alternate_delay
-    return 0
+	; data on portE
+	; CP1 portE 1
+	; OE1 poetE 0
 	
+write_data:
+	movlw	0x00
+	movwf	TRISE, A ;sets PORTE to output
+	movwf	TRISB, A ;sets PORTD to output
+	movlw	0x03	;keeps CP1 high and OE1 high. Last 4 bits 0001
+	movwf	PORTD, A 
+	
+	movlw   0x69    ;data to be outputted
+	movwf   0x01, A
+	movff   0x01, LATE
+	call    write_loop
+	return	0
     
+write_loop:
+	movlw	0x01	;drop CP1 keeping OE1 high last 4 bits: 0001
+	movwf	PORTD, A
+	movwf	0x03	;raise CP1 keeping OE1 high. last 4 bits: 0011
+	movwf	PORTD, A
+	movlw	0x01
+	movwf	TRISE, A ;sets trisE to 1 (disables outputs?)
+	return	0
+
+read_data:
+	movlw	0x03 ;keep OE1 and CP1 high. last 4 bits: 0011
+	movwf	PORTD, A
+	movwf	0x01 ;disabling outputs of portE
+	movwf	TRISE, A
+	call	read_loop
+	return	0
+
+read_loop:
+	movlw	0x02 ;drop OE1, keeping CP1 high. Last 4 bits 0010
+	movwf	PORTD, A
+	movlw	0x03 ;raise OE1, keeping CP1 high. Last 4 bits: 0011
+	movwf	PORTD, A
+	
+	movff	PORTE, 0x02 ;stores read data in register 0x02
+	return	0`

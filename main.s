@@ -64,22 +64,22 @@ alternate_delay:
     return 0
     
 delay1s_setup: 
-    movlw 0xfd    ; set W = 256 (timer)
-    movwf 0x06, A    ; set timer f06 = W (=256)
-    movlw 0x2b
-    movwf 0x07, A    ; set timer f07 = W (=256)
-    movlw 0x52    ; set W = 80
-    movwf 0x08, A    ; set timer f08 = W (=80)
-    call delay1s    ; run the delay
+    movlw   0xfd    ; set W = 256 (timer)
+    movwf   0x06, A    ; set timer f06 = W (=256)
+    movlw   0x2b
+    movwf   0x07, A    ; set timer f07 = W (=256)
+    movlw   0x52    ; set W = 80
+    movwf   0x08, A    ; set timer f08 = W (=80)
+    call    delay1s    ; run the delay
     return
 
 delay1s:
-    decfsz 0x06, A    ; decrement f02 and skip next if f02 = 0
-    bra delay1s
-    decfsz 0x07, A    ; decrement f02 and skip next if f02 = 0
-    bra delay1s
-    decfsz 0x08, A    ; decrement f02 and skip next if f02 = 0
-    bra delay1s
+    decfsz  0x06, A    ; decrement f02 and skip next if f02 = 0
+    bra	    delay1s
+    decfsz  0x07, A    ; decrement f02 and skip next if f02 = 0
+    bra	    delay1s
+    decfsz  0x08, A    ; decrement f02 and skip next if f02 = 0
+    bra	    delay1s
     return
 
 
@@ -101,5 +101,3 @@ Wait_transmit:	    ;wait for transmission to complete
     bra	    Wait_transmit
     bcf	    SSP2IF  ;clear interrupt flag
     return
-
-    

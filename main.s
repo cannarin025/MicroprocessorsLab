@@ -15,12 +15,13 @@ start:
 	bra 	test
 loop:
 	call	delay1s_setup
-	incf 	0x06, W, A
-	movff 	0x06, PORTC
+	incf 	0x05, W, A
+	movff 	0x05, PORTC
+	call	SPI_MasterTransmit
 test:
-	movwf	0x06, A		    ; Test for end of loop condition
+	movwf	0x05, A		    ; Test for end of loop condition
 	movlw 	0xFF		    ;end condition
-	cpfseq 	0x06, A
+	cpfseq 	0x05, A
 	bra 	loop	; Not yet finished goto start of loop again
 	movlw	0x0
 	goto 	$		    ; hold program at end

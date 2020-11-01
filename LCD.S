@@ -123,6 +123,7 @@ LCD_Clear:
 	movlw	2
 	call	LCD_delay_ms
 	return
+	
 ; ** a few delay routines below here as LCD timing can be quite critical ****
 LCD_delay_ms:		    ; delay given in ms in W
 	movwf	LCD_cnt_ms, A

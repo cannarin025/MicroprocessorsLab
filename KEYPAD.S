@@ -15,23 +15,59 @@ psect    Keypad_code, class=CODE
 Keypad_Init:
     banksel PADCFG1
     bsf	    REPU
-    clrf    LATE, A   
+    clrf    LATE, A 
+    
+    movlw   0x00
+    movwf   TRISJ, A
+    
     call    Keypad_Read_Rows
+    call    Keypad_Get_Output
+    return
     
 Keypad_Read_Rows:
     movlw   0x0F	;sets ports 0-3 as input, pins 4-7 as output
     movwf   TRISE, A
     movlw   10
     call    delay_sec
-    movff   PORTE, 0x01
+    movff   PORTE, 0x08
+    call    Keypad_Read_Col
+    return
 
 Keypad_Read_Col:
     movlw   0xF0
     movwf   TRISE, A
     movlw   10
     call    delay_sec
-    movff   PORTE, 0x02
+    movff   PORTE, 0x09
+    return
     
+Keypad_Get_Output:
+    movf    0x08, 0	;loads 0x08 (rows) into W
+    ADDWF   0x09, A	;performs addition of rows with 0x09 (columns)
+    movff   0x09, PORTJ ;outputs row (dim) in 1st 4 bits and col (dim) in last 4 bits
+    return
+    
+Keypad_loop:
+    movlw   0xFF
+    cpfseq  PORTJ, A
+    call    check_1
+    bra	    Keypad_loop
+
+check_1:
+    movlw   0xEE    ;corresponds to keypress 1
+    cpfseq  PORTJ, A
+    call    check_2
+    ;do things here
+    return
+
+check_2:
+    movlw   0xED    ;corresponds to keypress 2
+    cpfseq  PORTJ, A
+    call    check_3
+    ;do things here
+    return
+    
+    ;carry on with this etc...
 
 delay_sec:
     movwf   wtemp, A

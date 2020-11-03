@@ -1,6 +1,6 @@
 #include <xc.inc>
  
-global Keypad_Init
+global Keypad_Init, Keypad_Loop
     
 psect    udata_acs   ; named variables in access ram
 delay_curr:    ds 1   ; reserve 1 byte for current counter val
@@ -20,8 +20,10 @@ Keypad_Init:
     movlw   0x00
     movwf   TRISJ, A
     
-    call    Keypad_Read_Rows
-    call    Keypad_Get_Output
+    movlw   0x00
+    movwf   TRISH, A
+    
+    call    Keypad_Loop
     return
     
 Keypad_Read_Rows:
@@ -47,26 +49,115 @@ Keypad_Get_Output:
     movff   0x09, PORTJ ;outputs row (dim) in 1st 4 bits and col (dim) in last 4 bits
     return
     
-Keypad_loop:
+Keypad_Loop:
+    call    Keypad_Read_Rows
+    call    Keypad_Get_Output
     movlw   0xFF
     cpfseq  PORTJ, A
     call    check_1
-    bra	    Keypad_loop
+    bra	    Keypad_Loop
+    
+Keypad_Get_Value:
+    return
 
 check_1:
-    movlw   0xEE    ;corresponds to keypress 1
+    movlw   0x77    ;corresponds to keypress 1
     cpfseq  PORTJ, A
     call    check_2
-    ;do things here
+    
+    ;do things if button corresponds to 1
+    movlw   0x01    ;displays button value on portH
+    movwf   PORTH, A
+    
     return
 
 check_2:
-    movlw   0xED    ;corresponds to keypress 2
+    movlw   0xB7    ;corresponds to keypress 2
     cpfseq  PORTJ, A
     call    check_3
-    ;do things here
+    
+    ;do things if button corresponds to 2
+    movlw   0x02    ;displays button value on portH
+    movwf   PORTH, A
+    
+    return
+
+check_3:
+    movlw   0xD7    ;corresponds to keypress 3
+    cpfseq  PORTJ, A
+    call    check_4
+    
+    ;do things if button corresponds to 3
+    movlw   0x03   ;displays button value on portH
+    movwf   PORTH, A
+    
+    return
+
+check_4:
+    movlw   0x7B    ;corresponds to keypress 4
+    cpfseq  PORTJ, A
+    call    check_5
+    
+    ;do things if button corresponds to 4
+    movlw   0x04   ;displays button value on portH
+    movwf   PORTH, A
+    
+    return
+
+check_5:
+    movlw   0xBB    ;corresponds to keypress 5
+    cpfseq  PORTJ, A
+    call    check_6
+    
+    ;do things if button corresponds to 5
+    movlw   0x05   ;displays button value on portH
+    movwf   PORTH, A
+    
     return
     
+check_6:
+    movlw   0xDB    ;corresponds to keypress 6
+    cpfseq  PORTJ, A
+    call    check_7
+    
+    ;do things if button corresponds to 6
+    movlw   0x06   ;displays button value on portH
+    movwf   PORTH, A
+    
+    return
+
+check_7:
+    movlw   0x7D    ;corresponds to keypress 7
+    cpfseq  PORTJ, A
+    call    check_8
+    
+    ;do things if button corresponds to 7
+    movlw   0x07   ;displays button value on portH
+    movwf   PORTH, A
+    
+    return
+    
+check_8:
+    movlw   0xBD    ;corresponds to keypress 8
+    cpfseq  PORTJ, A
+    call    check_9
+    
+    ;do things if button corresponds to 8
+    movlw   0x08   ;displays button value on portH
+    movwf   PORTH, A
+    
+    return
+    
+check_9:
+    movlw   0xDD    ;corresponds to keypress 9
+    cpfseq  PORTJ, A
+    ;call    check_A
+    return
+    ;do things if button corresponds to 9
+    movlw   0x09   ;displays button value on portH
+    movwf   PORTH, A
+    
+    return
     ;carry on with this etc...
 
 delay_sec:

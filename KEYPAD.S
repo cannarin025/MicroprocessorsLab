@@ -1,7 +1,8 @@
 #include <xc.inc>
- 
+
 global Keypad_Init, Keypad_Loop
-    
+;extrn	LCD_Send_Byte_D 
+  
 psect    udata_acs   ; named variables in access ram
 delay_curr:    ds 1   ; reserve 1 byte for current counter val
 delay_count1:    ds 1   ; reserve 1 byte for counting
@@ -11,7 +12,12 @@ wtemp:        ds 1    ; reserve 1 byte for temp w val
     
 psect    Keypad_code, class=CODE
 
-    
+;outputTable:
+;    db	    0x77,0xB7,0xD7,0x7B,0xBB,0xDB,0x7D,0xBD,0xDD ;outputs corresponding to 1-9
+;    myArray	EQU 0x400
+;    counter	EQU 0x10
+;    align 2
+	
 Keypad_Init:
     banksel PADCFG1
     bsf	    REPU
@@ -29,7 +35,6 @@ Keypad_Init:
 Keypad_Read_Rows:
     movlw   0x0F	;sets ports 0-3 as input, pins 4-7 as output
     movwf   TRISE, A
-    movlw   10
     call    delay_sec
     movff   PORTE, 0x08
     call    Keypad_Read_Col
@@ -38,7 +43,6 @@ Keypad_Read_Rows:
 Keypad_Read_Col:
     movlw   0xF0
     movwf   TRISE, A
-    movlw   10
     call    delay_sec
     movff   PORTE, 0x09
     return
@@ -56,25 +60,44 @@ Keypad_Loop:
     cpfseq  PORTJ, A
     call    check_1
     bra	    Keypad_Loop
-    
-Keypad_Get_Value:
     return
+    
+;Keypad_Table_Check:
+;    lfsr    0, myArray
+;    movlw   low highword(outputTable)
+;    movwf   TBLPTRU, A
+;    movlw   high(outputTable)
+;    movwf   TBLPTRH, A
+;    movlw   low(outputTable)
+;    movwf   TBLPTRL, A
+;    movlw   9	    ;no of bytes to read (length of table)
+;    movwf   counter, A
+;    return ;this is incomplete
+;
+;loop:
+;    tblrd*+
+;    return ;this is incomplete 
+;    
+;Keypad_Get_Value:
+;    return
 
 check_1:
     movlw   0x77    ;corresponds to keypress 1
     cpfseq  PORTJ, A
-    call    check_2
+    bra    check_2
     
     ;do things if button corresponds to 1
     movlw   0x01    ;displays button value on portH
     movwf   PORTH, A
+    ;movlw  "1"
+    ;call    LCD_Send_Byte_D
     
     return
 
 check_2:
     movlw   0xB7    ;corresponds to keypress 2
     cpfseq  PORTJ, A
-    call    check_3
+    bra    check_3
     
     ;do things if button corresponds to 2
     movlw   0x02    ;displays button value on portH
@@ -85,7 +108,7 @@ check_2:
 check_3:
     movlw   0xD7    ;corresponds to keypress 3
     cpfseq  PORTJ, A
-    call    check_4
+    bra    check_4
     
     ;do things if button corresponds to 3
     movlw   0x03   ;displays button value on portH
@@ -96,7 +119,7 @@ check_3:
 check_4:
     movlw   0x7B    ;corresponds to keypress 4
     cpfseq  PORTJ, A
-    call    check_5
+    bra    check_5
     
     ;do things if button corresponds to 4
     movlw   0x04   ;displays button value on portH
@@ -107,7 +130,7 @@ check_4:
 check_5:
     movlw   0xBB    ;corresponds to keypress 5
     cpfseq  PORTJ, A
-    call    check_6
+    bra    check_6
     
     ;do things if button corresponds to 5
     movlw   0x05   ;displays button value on portH
@@ -118,7 +141,7 @@ check_5:
 check_6:
     movlw   0xDB    ;corresponds to keypress 6
     cpfseq  PORTJ, A
-    call    check_7
+    bra    check_7
     
     ;do things if button corresponds to 6
     movlw   0x06   ;displays button value on portH
@@ -129,7 +152,7 @@ check_6:
 check_7:
     movlw   0x7D    ;corresponds to keypress 7
     cpfseq  PORTJ, A
-    call    check_8
+    bra    check_8
     
     ;do things if button corresponds to 7
     movlw   0x07   ;displays button value on portH
@@ -140,7 +163,7 @@ check_7:
 check_8:
     movlw   0xBD    ;corresponds to keypress 8
     cpfseq  PORTJ, A
-    call    check_9
+    bra    check_9
     
     ;do things if button corresponds to 8
     movlw   0x08   ;displays button value on portH

@@ -63,7 +63,7 @@ Keypad_Get_Value:
 check_1:
     movlw   0x77    ;corresponds to keypress 1
     cpfseq  PORTJ, A
-    call    check_2
+    bra    check_2
     
     ;do things if button corresponds to 1
     movlw   0x01    ;displays button value on portH
@@ -74,7 +74,7 @@ check_1:
 check_2:
     movlw   0xB7    ;corresponds to keypress 2
     cpfseq  PORTJ, A
-    call    check_3
+    bra   check_3
     
     ;do things if button corresponds to 2
     movlw   0x02    ;displays button value on portH
@@ -85,7 +85,7 @@ check_2:
 check_3:
     movlw   0xD7    ;corresponds to keypress 3
     cpfseq  PORTJ, A
-    call    check_4
+    bra    check_4
     
     ;do things if button corresponds to 3
     movlw   0x03   ;displays button value on portH
@@ -96,7 +96,7 @@ check_3:
 check_4:
     movlw   0x7B    ;corresponds to keypress 4
     cpfseq  PORTJ, A
-    call    check_5
+    bra    check_5
     
     ;do things if button corresponds to 4
     movlw   0x04   ;displays button value on portH
@@ -107,7 +107,7 @@ check_4:
 check_5:
     movlw   0xBB    ;corresponds to keypress 5
     cpfseq  PORTJ, A
-    call    check_6
+    bra    check_6
     
     ;do things if button corresponds to 5
     movlw   0x05   ;displays button value on portH
@@ -118,7 +118,7 @@ check_5:
 check_6:
     movlw   0xDB    ;corresponds to keypress 6
     cpfseq  PORTJ, A
-    call    check_7
+    bra	    check_7
     
     ;do things if button corresponds to 6
     movlw   0x06   ;displays button value on portH
@@ -129,7 +129,7 @@ check_6:
 check_7:
     movlw   0x7D    ;corresponds to keypress 7
     cpfseq  PORTJ, A
-    call    check_8
+    bra	    check_8
     
     ;do things if button corresponds to 7
     movlw   0x07   ;displays button value on portH
@@ -140,7 +140,7 @@ check_7:
 check_8:
     movlw   0xBD    ;corresponds to keypress 8
     cpfseq  PORTJ, A
-    call    check_9
+    bra	    check_9
     
     ;do things if button corresponds to 8
     movlw   0x08   ;displays button value on portH
@@ -151,7 +151,7 @@ check_8:
 check_9:
     movlw   0xDD    ;corresponds to keypress 9
     cpfseq  PORTJ, A
-    ;call    check_A
+    ;bra    check_A
     return
     ;do things if button corresponds to 9
     movlw   0x09   ;displays button value on portH

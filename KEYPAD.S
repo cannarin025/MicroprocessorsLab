@@ -1,6 +1,7 @@
 #include <xc.inc>
  
 global Keypad_Init, Keypad_Loop
+extrn  LCD_Setup, LCD_Send_Byte_D, LCD_Clear
     
 psect    udata_acs   ; named variables in access ram
 delay_curr:    ds 1   ; reserve 1 byte for current counter val
@@ -23,6 +24,9 @@ Keypad_Init:
     movlw   0x00
     movwf   TRISH, A
     
+    movlw   0x00
+    movwf   0x03, A	;stores value from last cycle (see keypad_get_output:)
+    
     call    Keypad_Loop
     return
     
@@ -31,7 +35,7 @@ Keypad_Read_Rows:
     movwf   TRISE, A
     movlw   10
     call    delay_sec
-    movff   PORTE, 0x08
+    movff   PORTE, 0x01
     call    Keypad_Read_Col
     return
 
@@ -40,13 +44,16 @@ Keypad_Read_Col:
     movwf   TRISE, A
     movlw   10
     call    delay_sec
-    movff   PORTE, 0x09
+    movff   PORTE, 0x02
     return
     
 Keypad_Get_Output:
-    movf    0x08, 0	;loads 0x08 (rows) into W
-    ADDWF   0x09, A	;performs addition of rows with 0x09 (columns)
-    movff   0x09, PORTJ ;outputs row (dim) in 1st 4 bits and col (dim) in last 4 bits
+    movf    0x01, W, A	;loads 0x08 (rows) into W
+    ADDWF   0x02, A	;performs addition of rows with 0x09 (columns)
+    movf    0x02, W, A
+    cpfseq  0x03, A
+    movff   0x03, PORTJ ;outputs row (dim) in 1st 4 bits and col (dim) in last 4 bits
+    movff   0x02, 0x03	;stores number from "last cycle" to avoid repeat entries (if it is not the same as previous number)
     return
     
 Keypad_Loop:
@@ -54,12 +61,23 @@ Keypad_Loop:
     call    Keypad_Get_Output
     movlw   0xFF
     cpfseq  PORTJ, A
-    call    check_1
+    call    check_0
     bra	    Keypad_Loop
     
 Keypad_Get_Value:
     return
 
+check_0:
+    movlw   0xBE    ;corresponds to keypress 0
+    cpfseq  PORTJ, A
+    bra    check_1
+    
+    ;do things if button corresponds to 1
+    movlw   0x00    ;displays button value on portH
+    movwf   PORTH, A
+    movlw   "0"
+    call    LCD_Send_Byte_D    
+    
 check_1:
     movlw   0x77    ;corresponds to keypress 1
     cpfseq  PORTJ, A
@@ -68,6 +86,8 @@ check_1:
     ;do things if button corresponds to 1
     movlw   0x01    ;displays button value on portH
     movwf   PORTH, A
+    movlw   "1"
+    call    LCD_Send_Byte_D
     
     return
 
@@ -79,6 +99,8 @@ check_2:
     ;do things if button corresponds to 2
     movlw   0x02    ;displays button value on portH
     movwf   PORTH, A
+    movlw   "2"
+    call    LCD_Send_Byte_D
     
     return
 
@@ -90,6 +112,8 @@ check_3:
     ;do things if button corresponds to 3
     movlw   0x03   ;displays button value on portH
     movwf   PORTH, A
+    movlw   "3"
+    call    LCD_Send_Byte_D
     
     return
 
@@ -101,6 +125,8 @@ check_4:
     ;do things if button corresponds to 4
     movlw   0x04   ;displays button value on portH
     movwf   PORTH, A
+    movlw   "4"
+    call    LCD_Send_Byte_D
     
     return
 
@@ -112,6 +138,8 @@ check_5:
     ;do things if button corresponds to 5
     movlw   0x05   ;displays button value on portH
     movwf   PORTH, A
+    movlw   "5"
+    call    LCD_Send_Byte_D
     
     return
     
@@ -123,6 +151,8 @@ check_6:
     ;do things if button corresponds to 6
     movlw   0x06   ;displays button value on portH
     movwf   PORTH, A
+    movlw   "6"
+    call    LCD_Send_Byte_D
     
     return
 
@@ -134,6 +164,8 @@ check_7:
     ;do things if button corresponds to 7
     movlw   0x07   ;displays button value on portH
     movwf   PORTH, A
+    movlw   "7"
+    call    LCD_Send_Byte_D
     
     return
     
@@ -145,42 +177,120 @@ check_8:
     ;do things if button corresponds to 8
     movlw   0x08   ;displays button value on portH
     movwf   PORTH, A
+    movlw   "8"
+    call    LCD_Send_Byte_D
     
     return
     
 check_9:
     movlw   0xDD    ;corresponds to keypress 9
     cpfseq  PORTJ, A
-    ;bra    check_A
-    return
+    bra	    check_A
+    
     ;do things if button corresponds to 9
     movlw   0x09   ;displays button value on portH
     movwf   PORTH, A
+    movlw   "9"
+    call    LCD_Send_Byte_D
     
     return
-    ;carry on with this etc...
-
-delay_sec:
-    movwf   wtemp, A
-    movlw   0x00
-    movwf   delay_curr, A
-    incf    delay_curr, F, A        ; set f00 = f00 + 1
-    movlw   0xfd            ; set W = 256 (timer)
-    movwf   delay_count1, A            ; set timer f06 = W (=256)
-    movlw   0x2b
-    movwf   delay_count2, A            ; set timer f07 = W (=256)
-    movlw   0x52            ; set W = 80
-    movwf   delay_count3, A            ; set timer f08 = W (=80)
-    call    delay            ; run the delay
-    movf    wtemp, W, A
+    
+check_A:
+    movlw   0x7E    ;corresponds to keypress A
+    cpfseq  PORTJ, A
+    bra     check_B
+    
+    ;do things if button corresponds to A
+    movlw   0x0a   ;displays button value on portH
+    movwf   PORTH, A
+    movlw   "A"
+    call    LCD_Send_Byte_D
     return
+    
+check_B:
+    movlw   0xDE    ;corresponds to keypress B
+    cpfseq  PORTJ, A
+    bra	    check_C
+    ;do things if button corresponds to B
+    movlw   0x0b   ;displays button value on portH
+    movwf   PORTH, A
+    movlw   "B"
+    call    LCD_Send_Byte_D
+    return
+    
+check_C:
+    movlw   0xEE    ;corresponds to keypress C
+    cpfseq  PORTJ, A
+    bra    check_D
+    ;do things if button corresponds to C
+    movlw   0x0c   ;displays button value on portH
+    movwf   PORTH, A
+    call    LCD_Clear
+    return
+    
+check_D:
+    movlw   0xED    ;corresponds to keypress D
+    cpfseq  PORTJ, A
+    bra    check_E
+    ;do things if button corresponds to D
+    movlw   0x0e   ;displays button value on portH
+    movwf   PORTH, A
+    movlw   "D"
+    call    LCD_Send_Byte_D
+    return
+    
+check_E:
+    movlw   0xEB    ;corresponds to keypress E
+    cpfseq  PORTJ, A
+    bra    check_F
+    ;do things if button corresponds to E
+    movlw   0x0E   ;displays button value on portH
+    movwf   PORTH, A
+    movlw   "E"
+    call    LCD_Send_Byte_D
+    return
+    
+check_F:
+    movlw   0xE7    ;corresponds to keypress F
+    cpfseq  PORTJ, A
+    return
+    ;do things if button corresponds to F
+    movlw   0x0F   ;displays button value on portH
+    movwf   PORTH, A
+    movlw   "F"
+    call    LCD_Send_Byte_D
+    return
+
+;delay_sec:
+;    movwf   wtemp, A
+;    movlw   0x00
+;    movwf   delay_curr, A
+;    incf    delay_curr, F, A        ; set f00 = f00 + 1
+;    movlw   0xfd            ; set W = 256 (timer)
+;    movwf   delay_count1, A            ; set timer f06 = W (=256)
+;    movlw   0x2b
+;    movwf   delay_count2, A            ; set timer f07 = W (=256)
+;    movlw   0x52            ; set W = 80
+;    movwf   delay_count3, A            ; set timer f08 = W (=80)
+;    call    delay            ; run the delay
+;    movf    wtemp, W, A
+;    return
    
-delay:
-    decfsz  delay_count1, A            ; decrement f02 and skip next if f02 = 0
-    bra	    delay
-    decfsz  delay_count2, A            ; decrement f02 and skip next if f02 = 0
-    bra	    delay
-    decfsz  delay_count3, A            ; decrement f02 and skip next if f02 = 0
-    bra	    delay
+;delay:
+;    decfsz  delay_count1, A            ; decrement f02 and skip next if f02 = 0
+;    bra	    delay
+;    decfsz  delay_count2, A            ; decrement f02 and skip next if f02 = 0
+;    bra	    delay
+;    decfsz  delay_count3, A            ; decrement f02 and skip next if f02 = 0
+;    bra	    delay
+;    return
+    
+delay_sec:
+    movlw   0xFF
+    movwf   0x04, A
+    call    delay_loop
+delay_loop:
+    decfsz  0x04, A
+    bra	    delay_loop
     return
     

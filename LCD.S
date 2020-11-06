@@ -47,6 +47,7 @@ LCD_Setup:
 	call	LCD_Send_Byte_I
 	movlw	10		; wait 40us
 	call	LCD_delay_x4us
+	call	LCD_Clear
 	return
 
 LCD_Write_Hex:			; Writes byte stored in W as hex
@@ -144,6 +145,13 @@ LCD_delay_x4us:		    ; delay given in chunks of 4 microsecond in W
 	call	LCD_delay
 	return
 
+LCD_Clear:
+	movlw   0x01
+	call    LCD_Send_Byte_I
+	movlw    2
+	call    LCD_delay_ms
+	return	
+	
 LCD_delay:			; delay routine	4 instruction loop == 250ns	    
 	movlw 	0x00		; W=0
 lcdlp1:	decf 	LCD_cnt_l, F, A	; no carry when 0x00 -> 0xff
